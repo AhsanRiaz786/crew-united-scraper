@@ -13,16 +13,28 @@ def main():
         page = context.new_page()
         
         # Navigate to the URL
-        url = "https://example.com"  # Replace with your target URL
+        url = "https://www.crew-united.com/en/profil/login.asp"  # Replace with your target URL
         print(f"Navigating to: {url}")
         page.goto(url)
         
         # Wait for the page to load
+
+ 
+
         page.wait_for_load_state("networkidle")
+
+        username_input = page.query_selector("input[name='username']")
+        username_input.fill("test@test.com")
+
+        password_input = page.query_selector("input[name='password']")
+        password_input.fill("test1234")
+
+        login_button = page.query_selector("a.btn.js-cu-saveButton.waitable.icon-switch")
+        login_button.click()
+
         
         # Print page title to confirm we're on the right page
-        title = page.title()
-        print(f"Page title: {title}")
+
         
         # Add your scraping logic here
         # For example:
@@ -31,6 +43,8 @@ def main():
         
         # Close the browser
         browser.close()
+
+
 
 
 if __name__ == "__main__":
