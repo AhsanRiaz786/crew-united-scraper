@@ -43,16 +43,25 @@ def main():
         time.sleep(1)
 
         login_button = page.query_selector("a.btn.js-cu-saveButton.waitable.icon-switch")
-        time.sleep(1)
         login_button.click()
 
-        # Wait for login to complete (wait for page to redirect or load)
-        page.wait_for_load_state("networkidle")
-        print("Login completed, navigating to freelancers page...")
+        # Wait for login to complete by waiting for the logout button to appear.
+        # This is more reliable than just waiting for network activity to stop.
+        try:
+            print("Waiting for login to complete...")
+            page.wait_for_selector("a[href*='logout.asp']", timeout=15000)
+            print("Login confirmed successfully.")
+        except Exception:
+            print("Login confirmation failed. Could not find logout button after 15 seconds.")
+            print("The script may fail on the next page if the session is not active.")
         
-        # Navigate to freelancers page after successful login
-        freelancers_url = "https://www.crew-united.com/en/freelancers/#!&filter=%5B%7B%22id%22%3A%22channel%22%2C%22value%22%3A%22freelancer%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22searchTerm%22%2C%22value%22%3A%22%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22department_collection%22%2C%22value%22%3A%5B%22id%3A2%2F%2F129%2F%2F130%22%5D%2C%22settings%22%3A%22OR%22%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22country%22%2C%22value%22%3A%5B%22id%3A2%22%2C%22id%3A1%22%2C%22id%3A3%22%5D%2C%22settings%22%3A%22OR%22%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22city%22%2C%22value%22%3A%5B%5D%2C%22settings%22%3A%220km%22%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22language%22%2C%22value%22%3A%5B%5D%2C%22settings%22%3A%22AND%22%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22numberOfResults%22%2C%22value%22%3A%22%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22pageSize%22%2C%22value%22%3A%2250%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22sortOrder%22%2C%22value%22%3A%22random_kDf4CQq3WMtkvF1zz2YR%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22pagination%22%2C%22value%22%3A%221%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22displayStyle%22%2C%22value%22%3A%22card%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%5D"
+        # Navigate to companies page after successful login
+        freelancers_url = "https://www.crew-united.com/en/companies/#!&filter=%5B%7B%22id%22%3A%22channel%22%2C%22value%22%3A%22company%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22searchTerm%22%2C%22value%22%3A%22%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22rootDepartment%22%2C%22value%22%3A%5B%22id%3A2%22%5D%2C%22settings%22%3A%22AND%22%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22department_collection%22%2C%22value%22%3A%5B%5D%2C%22settings%22%3A%22AND%22%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22country%22%2C%22value%22%3A%5B%22id%3A1%22%5D%2C%22settings%22%3A%22OR%22%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22city%22%2C%22value%22%3A%5B%5D%2C%22settings%22%3A%220km%22%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22numberOfResults%22%2C%22value%22%3A%22%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22pageSize%22%2C%22value%22%3A%2250%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22sortOrder%22%2C%22value%22%3A%22random_MvnAIIzlojArxj5kWNKZ%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22pagination%22%2C%22value%22%3A%221%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%2C%7B%22id%22%3A%22displayStyle%22%2C%22value%22%3A%22card%22%2C%22settings%22%3A%5B%5D%2C%22isReadOnly%22%3Afalse%7D%5D&cardId=328300"
         page.goto(freelancers_url)
+        
+        # Wait for the companies page to load
+        page.wait_for_load_state("networkidle")
+        print(f"Successfully navigated to companies page.")
 
         time.sleep(1)
         # Wait for the freelancers page to load
