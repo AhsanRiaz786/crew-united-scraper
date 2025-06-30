@@ -58,48 +58,98 @@ def main():
         # Wait for the freelancers page to load
         page.wait_for_load_state("networkidle")
 
-        freelancers = page.query_selector_all("li.masonry-item")
-        print(f"Found {len(freelancers)} freelancers")
+        # Initialize counters
+        page_number = 1
+        total_freelancers = 0
+        all_freelancers_data = []
 
-        for i, freelancer in enumerate(freelancers, 1):
-            try:
-                # Extract name
-                name_element = freelancer.query_selector("span.cu-ui-utility-member-name.opt-state-premium a")
-                freelancer_name = name_element.inner_text().strip() if name_element else "N/A"
-                
-                # Extract location (primary location)
-                location_element = freelancer.query_selector("div.cu-ui-common-description.opt-secondary")
-                location1 = location_element.inner_text().strip() if location_element else "N/A"
-                
-                # Extract location2 (if there are multiple locations or address details)
-                # Looking for additional location info in contact details
-                contact_points = freelancer.query_selector_all("div.cu-ui-contact-point")
-                location2 = "N/A"
-                
-                # Extract email (handling obfuscated format)
-                email = "N/A"
-                email_element = freelancer.query_selector("div.cu-ui-contact-contact a[onclick*='putTogether']")
-                if email_element:
-                    onclick_attr = email_element.get_attribute("onclick")
-                    if onclick_attr and "putTogether" in onclick_attr:
-                        # Extract the obfuscated email string
-                        start = onclick_attr.find("'") + 1
-                        end = onclick_attr.find("'", start)
-                        if start > 0 and end > start:
-                            obfuscated_email = onclick_attr[start:end]
-                            # Decode the obfuscated email
-                            email = obfuscated_email.replace("$_isdot_$", ".").replace("$_isat_$", "@")
-                
-                # Print the extracted information
-                print(f"\n--- Freelancer {i} ---")
-                print(f"Name: {freelancer_name}")
-                print(f"Location1: {location1}")
-                print(f"Location2: {location2}")
-                print(f"Email: {email}")
-                
-            except Exception as e:
-                print(f"Error extracting data for freelancer {i}: {str(e)}")
-                continue
+        while True:
+            print(f"\n=== SCRAPING PAGE {page_number} ===")
+            
+            # Wait a bit for the page to fully load
+            time.sleep(2)
+            page.wait_for_load_state("networkidle")
+            
+            freelancers = page.query_selector_all("li.masonry-item")
+            print(f"Found {len(freelancers)} freelancers on page {page_number}")
+
+            for i, freelancer in enumerate(freelancers, 1):
+                try:
+                    # Extract name
+                    name_element = freelancer.query_selector("span.cu-ui-utility-member-name.opt-state-premium a")
+                    freelancer_name = name_element.inner_text().strip() if name_element else "N/A"
+                    
+                    # Extract location (primary location)
+                    location_element = freelancer.query_selector("div.cu-ui-common-description.opt-secondary")
+                    location1 = location_element.inner_text().strip() if location_element else "N/A"
+                    
+                    # Extract location2 (if there are multiple locations or address details)
+                    # Looking for additional location info in contact details
+                    contact_points = freelancer.query_selector_all("div.cu-ui-contact-point")
+                    location2 = "N/A"
+                    
+                    # Extract email (handling obfuscated format)
+                    email = "N/A"
+                    email_element = freelancer.query_selector("div.cu-ui-contact-contact a[onclick*='putTogether']")
+                    if email_element:
+                        onclick_attr = email_element.get_attribute("onclick")
+                        if onclick_attr and "putTogether" in onclick_attr:
+                            # Extract the obfuscated email string
+                            start = onclick_attr.find("'") + 1
+                            end = onclick_attr.find("'", start)
+                            if start > 0 and end > start:
+                                obfuscated_email = onclick_attr[start:end]
+                                # Decode the obfuscated email
+                                email = obfuscated_email.replace("$_isdot_$", ".").replace("$_isat_$", "@")
+                    
+                    # Store freelancer data
+                    freelancer_data = {
+                        'name': freelancer_name,
+                        'location1': location1,
+                        'location2': location2,
+                        'email': email,
+                        'page': page_number
+                    }
+                    all_freelancers_data.append(freelancer_data)
+                    total_freelancers += 1
+                    
+                    # Print the extracted information
+                    print(f"  {total_freelancers}. {freelancer_name} | {location1} | {email}")
+                    
+                except Exception as e:
+                    print(f"Error extracting data for freelancer {i} on page {page_number}: {str(e)}")
+                    continue
+
+            # Check if there's a next page button
+            next_button = page.query_selector("div.cu-ui-button-group.opt-collapse.pagebuttons a.btn.icon.icon-chevron-right")
+            
+            if next_button:
+                print(f"Navigating to page {page_number + 1}...")
+                try:
+                    # Click the next button
+                    next_button.click()
+                    page_number += 1
+                    
+                    # Wait for the next page to load
+                    time.sleep(2)
+                    page.wait_for_load_state("networkidle")
+                except Exception as e:
+                    print(f"Error navigating to next page: {str(e)}")
+                    break
+            else:
+                print(f"No more pages found. Scraping completed!")
+                break
+
+        # Print summary
+        print(f"\n=== SCRAPING SUMMARY ===")
+        print(f"Total pages scraped: {page_number}")
+        print(f"Total freelancers found: {total_freelancers}")
+        
+        # Optional: Save data to a file
+        if all_freelancers_data:
+            print(f"\nFirst 5 freelancers:")
+            for i, freelancer in enumerate(all_freelancers_data[:5], 1):
+                print(f"{i}. {freelancer['name']} | {freelancer['location1']} | {freelancer['email']}")
 
         
         # Print page title to confirm we're on the right page
